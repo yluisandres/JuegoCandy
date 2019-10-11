@@ -57,7 +57,7 @@ $(".btn-reinicio").on("click", function()
   }
   else
   {//al hacer click verificamos si esta en Reiniciar (1) y determinamos el texto a Iniciar (0)
-    $(".btn-reinicio").text("Iniciar",reinicio(),vaciarImagenes())    
+    $(".btn-reinicio").text("Iniciar",reinicio())    
     contadorclics=0
     document.getElementById("movimientos-text").innerHTML=contadorclics
     contadorReinicio=0    
@@ -90,6 +90,7 @@ function cargarImagenes()
       matriz[j][i-1]="image/"+imagen+".png"      
     }   
   }  
+  
 }
 //cuando cualquier hijo es clickeado se evalua que 3 o mas sean iguales
 var contadorclics=0
@@ -144,222 +145,68 @@ function verificarIguales()
 function eliminarIguales(cont,varj,vari)
 {
   var desde=(varj-cont)+1
-  var hasta=varj 
-  var fila=vari  
+  var hasta=varj    
   for(var i=desde;i<=hasta;i++)
   {              
     columnaactual=$(".col-"+i).children();                  
-    matriz[fila][i-1]="-"    
-    $(columnaactual[vari]).hide( "pulsate",2000,reOrdenar);                  
+    matriz[vari][i-1]="-"    
+    $(columnaactual[vari]).hide( "pulsate",2000,reOrdenar)                  
   }     
+  
   contadorpuntos=contadorpuntos+cont*10
   document.getElementById("score-text").innerHTML=contadorpuntos   
-}
-function vaciarImagenes()
-{
-  /*for(var col=1;col<8;col++)
-  {     
-    $("#col"+col).effect("explode",500);             
-  }*/     
-  for(var col=1;col<8;col++)
-  { 
-    $("#col"+col).empty()     
-  }       
 }
 
 function reOrdenar()
 { 
   for(var col=1;col<8;col++)
   {
-    for(var fil=0;fil<6;fil++)
-    {
-      $("#col"+col).empty()  
-      //$("#col"+col).hide( "drop", { direction: "down" }, "slow")  
-    }    
+    $("#col"+col).empty() //vaciamos todos los elementos que se encuentran en las columnas           
   } 
-  for(var i=0;i<7;i++)
+  //alert(matriz)
+  
+  for(var i=0;i<6;i++)//i es fila
   {
-    for(var j=0;j<6;j++)
+    for(var j=0;j<7;j++)//j es columna
     {
-      if(matriz[j][i]=="-")
+      if(matriz[i][j]=="-")//buscamos si existen campos vacios en la matriz
       {
-        if(j==0)
+        if(i>0)//si la fila es mayor a 0 asignamos a la fila afectada el src anterior
         {
-          var imagen= Math.floor(Math.random() * (5 - 1)) + 1; //se genera un randómico entre 1 y 4 que son las imagenes existentes        
-          matriz[j][i]="image/"+imagen+".png"      
+          //debe ir un for para que recorra hasta la primera fila y remplace la misma
+          for(var k=i;k>=0;k--)
+          {
+            if(k==0)
+            {
+              var imagen= Math.floor(Math.random() * (5 - 1)) + 1; //se genera un randómico entre 1 y 4 que son las imagenes existentes        
+              matriz[k][j]="image/"+imagen+".png" 
+            }
+            else
+            {
+              //alert("Actual "+matriz[k][i]+" Sig "+ matriz[k-1][i])
+              matriz[k][j]=matriz[k-1][j]
+            }            
+          }          
         }
-        else
-        {
-          matriz[j][i]=matriz[j-1][i]
+        else//si la fila afectada es la primera se generan nuevas imagenes
+        {          
+          var imagen= Math.floor(Math.random() * (5 - 1)) + 1; //se genera un randómico entre 1 y 4 que son las imagenes existentes        
+          matriz[0][j]="image/"+imagen+".png"      
         }        
       }
     }
   }
+  
+  
+  
   for(var i=1;i<8;i++)
   {    
     namecol=".col-"+i    // se le asigna el nombre de la columna mas i
     for(var j=0;j<6;j++)
-    {       
-      var src=matriz[j][i-1]
+    {     
+      var src=matriz[j][i-1]      
       $(namecol).append("<img src='"+src+"'/>").sortable();//añade una nueva imagen                       
     }   
-  }    
-  
-  
-}  
-/*
-var numeroClicks = 0;
-function inicioJuego(){
-  hideAll();
-  bloqueHandler();
-  ordenarBloques();
-  numeroClicks=0;
-
-
-}
-
-function primerClick(){
-  if(numeroClicks==1){
-    return true;
-  }else return false;
-}
-function ultimoClick(){
-  if($$('.cuadro').length==2){
-    var numMostrados=0;
-    $$('.cuadro .contenido').each(function(item){
-      if (item.visible()) {
-        numMostrados++;
-      }
-    })
-    if (numMostrados==2) {
-      return true;
-    }else return false;
-
-
-  }else return false;
-}
-
-function bloqueHandler(){
-  if ($('activarJuego').getValue()=='on') {
-
-      $('tablero').observe('click', mostrarImg)
-
-  }else{
-    $('tablero').stopObserving('click');
-    parar();
-    reinicio();
-    resetCuadros();
   }
+  verificarIguales()
 }
-
-
-function hideAll(){
-  $$('.contenido').each(function(item){
-    item.hide();
-    bloqueHandler()
-  })
-}
-
-function check2Clicks(){
-  if (getMostrados().length==2) {
-    return true;
-  }else return false;
-}
-
-function getMostrados(){
-  var imgMostradas = new Array()
-  var i = 0;
-  $$('.contenido').each(function(item, index){
-    if(item.visible()){
-      imgMostradas[i]=item;
-      i++;
-    }
-  });
-  return imgMostradas;
-}
-
-function mostrarImg(event){
-  var bloqueClickeado = event.findElement();
-  numeroClicks++;
-  bloqueClickeado.down().show();
-  decisionBloques();
-  if (primerClick()) {
-    inicio();
-  }else if (ultimoClick()) {
-    parar();
-
-  }
-}
-
-function decisionBloques(){
-  if (check2Clicks()) {
-    $('tablero').stopObserving('click');
-    if (matchSeleccionados()) {
-      exitoMatch.delay(1);
-    }else {
-      hideAll.delay(1);
-    }
-  }
-}
-
-function matchSeleccionados(){
-  var seleccionados = getMostrados();
-  if (seleccionados[0].readAttribute('src')==seleccionados[1].readAttribute('src')) {
-    return true;
-  }else return false;
-}
-
-function exitoMatch(){
-  var seleccionados = getMostrados();
-  seleccionados.each(function(item){
-    item.hide();
-    item.up().removeClassName('cuadro');
-    item.up().addClassName('cuadroExito');
-  })
-  bloqueHandler()
-}
-
-function resetCuadros(){
-  $$('.contenido').each(function(item){
-    item.up().addClassName('cuadro');
-    item.up().removeClassName('cuadroExito');
-
-  })
-}
-
-function ordenarBloques(){
-  $$('.cuadro').each(function(item){
-    item.setStyle({order: makeUniqueRandom()})
-  })
-}
-var uniqueRandoms = [];
-var numRandoms = 20;
-function makeUniqueRandom() {
-    // refill the array if needed
-    if (!uniqueRandoms.length) {
-        for (var i = 0; i < numRandoms; i++) {
-            uniqueRandoms.push(i);
-        }
-    }
-    var index = Math.floor(Math.random() * uniqueRandoms.length);
-    var val = uniqueRandoms[index];
-
-    // now remove that value from the array
-    uniqueRandoms.splice(index, 1);
-
-    return val;
-
-}
-
-
-
-
-document.observe("dom:loaded", function(){
-  inicioJuego();
-  $('activarJuego').observe('change', inicioJuego);
-
-
-
-
-})
-*/
